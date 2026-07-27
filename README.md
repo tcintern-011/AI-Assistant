@@ -1,4 +1,3 @@
-````markdown
 # AI Article Summarizer (LangChain + Groq)
 
 A lightweight Python application built with **LangChain** and **Groq AI** that automatically generates concise, bulleted summaries of long articles using the **Llama 3.3 70B Versatile** model.
