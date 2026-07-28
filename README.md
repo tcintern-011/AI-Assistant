@@ -1,65 +1,156 @@
 # AI Article Summarizer (LangChain + Groq)
 
-A lightweight Python application built with **LangChain** and **Groq AI** that automatically generates concise, bulleted summaries of long articles using the **Llama 3.3 70B Versatile** model.
+A lightweight Python application that demonstrates how to build **multiple AI-powered article summarizers** using **LangChain's LCEL (LangChain Expression Language)** and **Groq's Llama 3.3 model**.
+
+The application generates multiple summaries of the same article using different prompt templates:
+
+* **Executive Brief** – Professional summary for decision-makers.
+* **Key Points** – Concise bullet-point summary.
+* **Explain to a Child** – Simple explanation using easy language.
+
+The project is intentionally modular to demonstrate good software organization practices when working with LangChain.
 
 ---
 
 # Features
 
-- Generates concise, fact-focused summaries of long articles.
-- Powered by **Llama 3.3 (70B Versatile)** running on Groq's high-performance inference engine.
-- Built using the **LangChain Expression Language (LCEL)** for a clean and modular architecture.
-- Uses **ChatPromptTemplate**, **ChatGroq**, and **StrOutputParser** to create an end-to-end summarization pipeline.
-- Securely manages API keys using **python-dotenv**.
-- Easily customizable prompts and model selection.
-
----
-
-# Prerequisites
-
-Before running this project, ensure you have:
-
-- **Python 3.10** or later
-- A **Groq API Key** (available from the Groq Console)
+* Modular project architecture
+* Powered by Groq's **Llama 3.3 70B Versatile** model
+* Uses LangChain Expression Language (LCEL)
+* Multiple Prompt Templates
+* Output parsing using `StrOutputParser`
+* Environment variable support with `.env`
+* Clean and beginner-friendly codebase
 
 ---
 
 # Project Structure
 
 ```text
-.
-├── .env                # API keys and secret variables (Do not commit)
-├── main.py             # Main Python summarizer script
-├── requirements.txt    # Project dependencies
-└── README.md           # Project documentation
+article-summarizer/
+│
+├── .env
+├── main.py
+├── config.py
+├── models.py
+├── prompts.py
+├── requirements.txt
+├── README.md
+│
+└── __pycache__/
 ```
+
+## File Responsibilities
+
+### `main.py`
+
+Application entry point.
+
+* Creates the parser
+* Builds the LangChain pipeline
+* Invokes the model
+* Displays generated summaries
+
+---
+
+### `config.py`
+
+Loads environment variables.
+
+Example responsibilities:
+
+* Load `.env`
+* Configure application settings
+
+---
+
+### `models.py`
+
+Creates and exports the configured LangChain chat model.
+
+Example:
+
+* Initialize `ChatGroq`
+* Configure model name
+* Configure temperature
+
+---
+
+### `prompts.py`
+
+Stores all prompt templates used by the application.
+
+Current prompts include:
+
+* Executive Brief
+* Key Points
+* Explain to a Child
+
+Adding new summarization styles only requires creating another prompt here.
+
+---
+
+# How It Works
+
+```
+                Article
+                   │
+                   ▼
+           Prompt Template
+                   │
+                   ▼
+             ChatGroq Model
+                   │
+                   ▼
+          StrOutputParser
+                   │
+                   ▼
+            Final Summary
+```
+
+The application loops through multiple prompt templates and generates different summaries of the same article.
 
 ---
 
 # Installation
 
-## 1. Clone or Create the Project
+## 1. Clone the Repository
 
 ```bash
-mkdir article-summarizer
+git clone <repository-url>
+```
+
+```bash
 cd article-summarizer
 ```
 
 ---
 
-## 2. Create a Virtual Environment (Recommended)
+## 2. Create a Virtual Environment
 
 ### Windows
 
 ```bash
 python -m venv venv
+```
+
+Activate:
+
+```bash
 venv\Scripts\activate
 ```
 
-### macOS/Linux
+---
+
+### Linux / macOS
 
 ```bash
 python3 -m venv venv
+```
+
+Activate:
+
+```bash
 source venv/bin/activate
 ```
 
@@ -73,41 +164,17 @@ pip install -r requirements.txt
 
 ---
 
-# Requirements
-
-Create a `requirements.txt` file with the following dependencies:
+## 4. Create a `.env` File
 
 ```text
-langchain-core
-langchain-groq
-python-dotenv
+GROQ_API_KEY=your_groq_api_key_here
 ```
+
+Replace the value with your Groq API key.
 
 ---
 
-# Environment Configuration
-
-Create a `.env` file in the project's root directory.
-
-```env
-GROQ_API_KEY=your_actual_groq_api_key_here
-```
-
-## Security Note
-
-Never commit your `.env` file to GitHub.
-
-Add it to your `.gitignore` file:
-
-```gitignore
-.env
-```
-
----
-
-# Running the Application
-
-Run the application using:
+## 5. Run the Application
 
 ```bash
 python main.py
@@ -115,89 +182,73 @@ python main.py
 
 ---
 
-# How It Works
+# Example Output
 
-The application follows a simple LangChain pipeline:
-
-1. **Load Environment Variables**
-
-   - `load_dotenv()` loads the `GROQ_API_KEY` from the `.env` file.
-
-2. **Initialize the Language Model**
-
-   - Creates a `ChatGroq` instance using the `llama-3.3-70b-versatile` model.
-   - Uses `temperature=0` to produce deterministic and factual summaries.
-
-3. **Create the Prompt**
-
-   - `ChatPromptTemplate` instructs the model to:
-     - Read the article
-     - Extract only the important information
-     - Return concise bullet points
-
-4. **Parse the Output**
-
-   - `StrOutputParser` converts the model response into a plain string.
-
-5. **Execute the Chain**
-
-   - The components are connected using LCEL:
-
-```python
-prompt | model | parser
 ```
+==============================
+EXECUTIVE BRIEF
+==============================
 
-   - The chain is executed with:
+Sleep is an active biological process essential for memory formation,
+brain maintenance, and emotional regulation...
 
-```python
-chain.invoke({"article": article})
-```
+==============================
+KEY POINTS
+==============================
 
----
+• Converts short-term memories into long-term memories
 
-# Customization
+• Removes toxic waste from the brain
 
-## Change the Model
+• Improves emotional regulation
 
-Replace:
+• Reduces stress hormone levels
 
-```python
-llama-3.3-70b-versatile
-```
+==============================
+EXPLAIN TO A CHILD
+==============================
 
-with any Groq-supported model, for example:
-
-- `llama3-8b-8192`
-- `mixtral-8x7b-32768`
-- `gemma2-9b-it`
-
----
-
-## Modify the Prompt
-
-You can customize the prompt to generate different types of outputs, such as:
-
-- Executive summaries
-- Beginner-friendly (ELI5) explanations
-- Detailed summaries
-- Technical summaries
-- Numbered lists instead of bullet points
-
-Simply edit the template passed to:
-
-```python
-ChatPromptTemplate.from_template(...)
+Think of your brain like a classroom that gets messy during the day.
+When you sleep, your brain cleans the classroom, organizes everything
+you learned, and gets ready for tomorrow.
 ```
 
 ---
 
 # Technologies Used
 
-- Python
-- LangChain
-- LangChain Expression Language (LCEL)
-- Groq API
-- Llama 3.3 70B Versatile
-- python-dotenv
+* Python 3.11+
+* LangChain
+* LangChain Core
+* LangChain Groq
+* Groq API
+* python-dotenv
+
+---
+
+# LangChain Concepts Demonstrated
+
+This project demonstrates several important LangChain concepts:
+
+* Chat Models
+* Prompt Templates
+* LCEL Pipelines
+* Runnable Interface
+* `invoke()`
+* Output Parsers
+* Environment Variable Management
+
+---
+
+# Learning Objectives
+
+This project is ideal for beginners learning:
+
+* LangChain fundamentals
+* LCEL syntax (`|`)
+* Prompt engineering
+* Modular Python architecture
+* Working with LLM APIs
+* Environment configuration using `.env`
 
 ---
