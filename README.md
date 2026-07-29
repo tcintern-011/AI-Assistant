@@ -8,6 +8,8 @@ The application generates multiple summaries of the same article using different
 * **Key Points** – Concise bullet-point summary.
 * **Explain to a Child** – Simple explanation using easy language.
 
+Each summary style also has a matching **reviewer prompt** that critiques the generated draft against a set of quality criteria (accuracy, format, tone, etc.), enabling a self-review / feedback step on top of the base summarization.
+
 The project is intentionally modular to demonstrate good software organization practices when working with LangChain.
 
 ---
@@ -18,6 +20,8 @@ The project is intentionally modular to demonstrate good software organization p
 * Powered by Groq's **Llama 3.3 70B Versatile** model
 * Uses LangChain Expression Language (LCEL)
 * Multiple Prompt Templates
+* Parallel chain execution for generating all summaries at once
+* Reviewer prompts for critiquing each generated summary
 * Output parsing using `StrOutputParser`
 * Environment variable support with `.env`
 * Clean and beginner-friendly codebase
@@ -34,6 +38,7 @@ article-summarizer/
 ├── config.py
 ├── models.py
 ├── prompts.py
+├── chains.py
 ├── requirements.txt
 ├── README.md
 │
@@ -46,10 +51,10 @@ article-summarizer/
 
 Application entry point.
 
-* Creates the parser
-* Builds the LangChain pipeline
-* Invokes the model
-* Displays generated summaries
+* Imports the configured model, prompts, and chains
+* Defines the article to be summarized
+* Invokes the parallel chain
+* Displays the generated summaries (executive brief, key points, and child explanation)
 
 ---
 
@@ -86,29 +91,51 @@ Current prompts include:
 * Key Points
 * Explain to a Child
 
-Adding new summarization styles only requires creating another prompt here.
+Each summary style also has a corresponding **reviewer prompt** that scores and critiques the draft:
+
+* Executive Brief Reviewer
+* Key Points Reviewer
+* Explain to a Child Reviewer
+
+Adding new summarization styles only requires creating another prompt (and optionally a matching reviewer prompt) here.
+
+---
+
+### `chains.py`
+
+Builds the LCEL pipelines that connect prompts, the model, and the output parser.
+
+* Defines the individual chains for each summary style
+* Combines them into a `parallel_chain` so all summaries are generated in a single invocation
+* Returns a dictionary of results keyed by summary type (e.g. `executive`, `keypoints`, `child`)
 
 ---
 
 # How It Works
 
 ```
-                Article
-                   │
-                   ▼
-           Prompt Template
-                   │
-                   ▼
-             ChatGroq Model
-                   │
-                   ▼
-          StrOutputParser
-                   │
-                   ▼
-            Final Summary
+                        Article
+                           │
+                           ▼
+                 ┌─────────────────┐
+                 │  Parallel Chain │
+                 └─────────────────┘
+                 /        │        \
+                ▼         ▼         ▼
+          Executive   Key Points   Child
+           Prompt       Prompt    Prompt
+                │         │         │
+                ▼         ▼         ▼
+                    ChatGroq Model
+                │         │         │
+                ▼         ▼         ▼
+               StrOutputParser (each)
+                │         │         │
+                ▼         ▼         ▼
+            Final Summaries (dict)
 ```
 
-The application loops through multiple prompt templates and generates different summaries of the same article.
+The application runs all prompt templates against the same article in parallel, producing different summaries at once.
 
 ---
 
@@ -233,6 +260,7 @@ This project demonstrates several important LangChain concepts:
 * Chat Models
 * Prompt Templates
 * LCEL Pipelines
+* Parallel Runnables
 * Runnable Interface
 * `invoke()`
 * Output Parsers
@@ -246,6 +274,7 @@ This project is ideal for beginners learning:
 
 * LangChain fundamentals
 * LCEL syntax (`|`)
+* Parallel chain composition
 * Prompt engineering
 * Modular Python architecture
 * Working with LLM APIs
